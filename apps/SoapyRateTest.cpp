@@ -13,12 +13,12 @@
 #include <cstdio>
 
 static sig_atomic_t loopDone = false;
-void sigIntHandler(const int)
+static void sigIntHandler(const int)
 {
     loopDone = true;
 }
 
-void runRateTestStreamLoop(
+static void runRateTestStreamLoop(
     SoapySDR::Device *device,
     SoapySDR::Stream *stream,
     const int direction,
