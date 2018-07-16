@@ -27,10 +27,11 @@ int SoapySDRRateTest(
  **********************************************************************/
 static void printBanner(void)
 {
-    std::cout << "######################################################" << std::endl;
-    std::cout << "##     Soapy SDR -- the SDR abstraction library     ##" << std::endl;
-    std::cout << "######################################################" << std::endl;
-    std::cout << std::endl;
+    std::cerr <<
+        "######################################################\n"
+        "##     Soapy SDR -- the SDR abstraction library     ##\n"
+        "######################################################\n"
+        "\n";
 }
 
 /***********************************************************************
@@ -38,26 +39,25 @@ static void printBanner(void)
  **********************************************************************/
 static int printHelp(void)
 {
-    std::cout << "Usage SoapySDRUtil [options]" << std::endl;
-    std::cout << "  Options summary:" << std::endl;
-    std::cout << "    --help \t\t\t\t Print this help message" << std::endl;
-    std::cout << "    --info \t\t\t\t Print module information" << std::endl;
-    std::cout << "    --find[=\"driver=foo,type=bar\"] \t Discover available devices" << std::endl;
-    std::cout << "    --make[=\"driver=foo,type=bar\"] \t Create a device instance" << std::endl;
-    std::cout << "    --probe[=\"driver=foo,type=bar\"] \t Print detailed information" << std::endl;
-    std::cout << std::endl;
-
-    std::cout << "  Advanced options:" << std::endl;
-    std::cout << "    --check[=driverName] \t\t Check if driver is present" << std::endl;
-    std::cout << "    --sparse             \t\t Simplified output for --find" << std::endl;
-    std::cout << std::endl;
-
-    std::cout << "  Rate testing options:" << std::endl;
-    std::cout << "    --args[=\"driver=foo\"] \t\t Arguments for testing" << std::endl;
-    std::cout << "    --rate[=stream rate Sps] \t\t Rate in samples per second" << std::endl;
-    std::cout << "    --channels[=\"0, 1, 2\"] \t\t List of channels, default 0" << std::endl;
-    std::cout << "    --direction[=RX or TX] \t\t Specify the channel direction" << std::endl;
-    std::cout << std::endl;
+    std::cerr <<
+        "Usage SoapySDRUtil [options]\n"
+        "  Options summary:\n"
+        "    --help \t\t\t\t Print this help message\n"
+        "    --info \t\t\t\t Print module information\n"
+        "    --find[=\"driver=foo,type=bar\"] \t Discover available devices\n"
+        "    --make[=\"driver=foo,type=bar\"] \t Create a device instance\n"
+        "    --probe[=\"driver=foo,type=bar\"] \t Print detailed information\n"
+        "\n"
+        "  Advanced options:\n"
+        "    --check[=driverName] \t\t Check if driver is present\n"
+        "    --sparse             \t\t Simplified output for --find\n"
+        "\n"
+        "  Rate testing options:\n"
+        "    --args[=\"driver=foo\"] \t\t Arguments for testing\n"
+        "    --rate[=stream rate Sps] \t\t Rate in samples per second\n"
+        "    --channels[=\"0, 1, 2\"] \t\t List of channels, default 0\n"
+        "    --direction[=RX or TX] \t\t Specify the channel direction\n"
+        "\n";
     return EXIT_SUCCESS;
 }
 

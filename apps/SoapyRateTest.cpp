@@ -41,7 +41,7 @@ void runRateTestStreamLoop(
     auto timeLastStatus = std::chrono::high_resolution_clock::now();
     int spinIndex(0);
 
-    std::cout << "Starting stream loop, press Ctrl+C to exit..." << std::endl;
+    std::cerr << "Starting stream loop, press Ctrl+C to exit..." << std::endl;
     device->activateStream(stream);
     signal(SIGINT, sigIntHandler);
     while (not loopDone)
@@ -82,8 +82,8 @@ void runRateTestStreamLoop(
         {
             timeLastSpin = now;
             static const char spin[] = {"|/-\\"};
-            printf("\b%c", spin[(spinIndex++)%4]);
-            fflush(stdout);
+            fprintf(stderr, "\b%c", spin[(spinIndex++)%4]);
+            fflush(stderr);
         }
         //occasionally read out the stream status (non blocking)
         if (timeLastStatus + std::chrono::seconds(1) < now)
@@ -104,10 +104,10 @@ void runRateTestStreamLoop(
             timeLastPrint = now;
             const auto timePassed = std::chrono::duration_cast<std::chrono::microseconds>(now - startTime);
             const auto sampleRate = double(totalSamples)/timePassed.count();
-            printf("\b%g Msps\t%g MBps", sampleRate, sampleRate*numChans*elemSize);
-            if (overflows != 0) printf("\tOverflows %u", overflows);
-            if (underflows != 0) printf("\tUnderflows %u", underflows);
-            printf("\n ");
+            fprintf(stderr, "\b%g Msps\t%g MBps", sampleRate, sampleRate*numChans*elemSize);
+            if (overflows != 0) fprintf(stderr, "\tOverflows %u", overflows);
+            if (underflows != 0) fprintf(stderr, "\tUnderflows %u", underflows);
+            fputs("\n ", stderr);
         }
 
     }
@@ -153,10 +153,10 @@ int SoapySDRRateTest(
         auto stream = device->setupStream(direction, format, channels);
 
         //run the rate test one setup is complete
-        std::cout << "Stream format: " << format << std::endl;
-        std::cout << "Num channels: " << channels.size() << std::endl;
-        std::cout << "Element size: " << elemSize << " bytes" << std::endl;
-        std::cout << "Begin " << directionStr << " rate test at " << (sampleRate/1e6) << " Msps" << std::endl;
+        std::cerr << "Stream format: " << format << std::endl <<
+            "Num channels: " << channels.size() << std::endl <<
+            "Element size: " << elemSize << " bytes" << std::endl <<
+            "Begin " << directionStr << " rate test at " << (sampleRate/1e6) << " Msps" << std::endl;
         runRateTestStreamLoop(device, stream, direction, channels.size(), elemSize);
 
         //cleanup stream and device
