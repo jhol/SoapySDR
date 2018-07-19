@@ -20,7 +20,8 @@ int SoapySDRRateTest(
     const std::string &argStr,
     const double sampleRate,
     const std::string &channelStr,
-    const std::string &directionStr);
+    const std::string &directionStr,
+    const std::string &streamPathStr);
 
 /***********************************************************************
  * Print the banner
@@ -57,6 +58,8 @@ static int printHelp(void)
         "    --rate[=stream rate Sps] \t\t Rate in samples per second\n"
         "    --channels[=\"0, 1, 2\"] \t\t List of channels, default 0\n"
         "    --direction[=RX or TX] \t\t Specify the channel direction\n"
+        "    --file=PATH \t\t The file to read or write stream data to\n"
+        "                \t\t or '-' for stdin/stdout\n"
         "\n";
     return EXIT_SUCCESS;
 }
@@ -239,9 +242,7 @@ static int checkDriver(const std::string &driverName)
  **********************************************************************/
 int main(int argc, char *argv[])
 {
-    std::string argStr;
-    std::string chanStr;
-    std::string dirStr;
+    std::string argStr, chanStr, dirStr, streamPathStr;
     double sampleRate(0.0);
     std::string driverName;
     bool findDevicesFlag(false);
@@ -266,6 +267,7 @@ int main(int argc, char *argv[])
         {"rate", optional_argument, 0, 'r'},
         {"channels", optional_argument, 0, 'n'},
         {"direction", optional_argument, 0, 'd'},
+        {"file", optional_argument, 0, 'F'},
         {0, 0, 0,  0}
     };
     int long_index = 0;
@@ -310,6 +312,9 @@ int main(int argc, char *argv[])
         case 'd':
             if (optarg != nullptr) dirStr = optarg;
             break;
+        case 'F':
+            if (optarg != nullptr) streamPathStr = optarg;
+            break;
         }
     }
 
@@ -322,7 +327,7 @@ int main(int argc, char *argv[])
     //invoke utilities that rely on multiple arguments
     if (sampleRate != 0.0)
     {
-        return SoapySDRRateTest(argStr, sampleRate, chanStr, dirStr);
+        return SoapySDRRateTest(argStr, sampleRate, chanStr, dirStr, streamPathStr);
     }
 
     //unknown or unspecified options, do help...

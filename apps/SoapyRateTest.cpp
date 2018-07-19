@@ -23,7 +23,8 @@ static void runRateTestStreamLoop(
     SoapySDR::Stream *stream,
     const int direction,
     const size_t numChans,
-    const size_t elemSize)
+    const size_t elemSize,
+    FILE *const streamFile)
 {
     //allocate buffers for the stream read/write
     const size_t numElems = device->getStreamMTU(stream);
@@ -49,6 +50,17 @@ static void runRateTestStreamLoop(
         int ret(0);
         int flags(0);
         long long timeNs(0);
+
+        if (streamFile && direction == SOAPY_SDR_TX)
+        {
+            for (size_t elem = 0; elem != numElems && !loopDone; elem++)
+                for (size_t i = 0; i != numChans && !loopDone; i++)
+                    if (fread(buffs[i] + elem * elemSize, elemSize, 1, streamFile) != 1)
+                        loopDone = true;
+            if (loopDone)
+                break;
+        }
+
         switch(direction)
         {
         case SOAPY_SDR_RX:
@@ -76,6 +88,12 @@ static void runRateTestStreamLoop(
             break;
         }
         totalSamples += ret;
+
+        if (streamFile && direction == SOAPY_SDR_RX) {
+            for (int elem = 0; elem != ret; elem++)
+                for (size_t i = 0; i != numChans; i++)
+                    fwrite(buffs[i] + elem * elemSize, elemSize, 1, streamFile);
+        }
 
         const auto now = std::chrono::high_resolution_clock::now();
         if (timeLastSpin + std::chrono::milliseconds(300) < now)
@@ -114,11 +132,22 @@ static void runRateTestStreamLoop(
     device->deactivateStream(stream);
 }
 
+static FILE* openStreamFile(const std::string &pathStr, const int direction)
+{
+    if (pathStr.empty())
+        return nullptr;
+    else if (pathStr == "-")
+        return (direction == SOAPY_SDR_RX) ? stdout : stdin;
+    else
+        return fopen(pathStr.c_str(), "wb");
+}
+
 int SoapySDRRateTest(
     const std::string &argStr,
     const double sampleRate,
     const std::string &channelStr,
-    const std::string &directionStr)
+    const std::string &directionStr,
+    const std::string &streamPathStr)
 {
     SoapySDR::Device *device(nullptr);
 
@@ -131,6 +160,9 @@ int SoapySDRRateTest(
         if (directionStr == "RX" or directionStr == "rx") direction = SOAPY_SDR_RX;
         if (directionStr == "TX" or directionStr == "tx") direction = SOAPY_SDR_TX;
         if (direction == -1) throw std::invalid_argument("direction not in RX/TX: " + directionStr);
+
+        //open the output file
+        FILE *const streamFile = openStreamFile(streamPathStr, direction);
 
         //build channels list, using KwargsFromString is a easy parsing hack
         std::vector<size_t> channels;
@@ -157,11 +189,15 @@ int SoapySDRRateTest(
             "Num channels: " << channels.size() << std::endl <<
             "Element size: " << elemSize << " bytes" << std::endl <<
             "Begin " << directionStr << " rate test at " << (sampleRate/1e6) << " Msps" << std::endl;
-        runRateTestStreamLoop(device, stream, direction, channels.size(), elemSize);
+        runRateTestStreamLoop(device, stream, direction, channels.size(), elemSize, streamFile);
 
         //cleanup stream and device
         device->closeStream(stream);
         SoapySDR::Device::unmake(device);
+
+        //close the output file
+        if (streamFile && streamFile != stdout)
+            fclose(streamFile);
     }
     catch (const std::exception &ex)
     {
